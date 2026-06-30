@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import inspect
 
+from attendance_router import router as attendance_router
 import models
 from auth import hash_password
 from auth_routes import router as auth_router
@@ -18,12 +19,16 @@ logger = logging.getLogger(__name__)
 
 def create_tables() -> None:
     inspector = inspect(engine)
-    users_table_exists = inspector.has_table("users")
+
+    existing_tables = set(inspector.get_table_names())
+
     Base.metadata.create_all(bind=engine)
-    if users_table_exists:
-        logger.info("Database table already exists: users")
-    else:
-        logger.info("Database table created: users")
+
+    for table in Base.metadata.tables.keys():
+        if table in existing_tables:
+            logger.info(f"Database table already exists: {table}")
+        else:
+            logger.info(f"Database table created: {table}")
 
 
 def seed_default_admin() -> None:
@@ -71,6 +76,7 @@ def create_app() -> FastAPI:
 
     app.include_router(auth_router)
     app.include_router(user_router)
+    app.include_router(attendance_router)
 
     @app.get("/health", tags=["health"])
     def health_check() -> dict[str, str]:

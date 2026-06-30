@@ -1,7 +1,10 @@
 import uuid
-from datetime import datetime
 from enum import StrEnum
 import re
+from datetime import date, datetime
+from typing import Optional
+
+from pydantic import BaseModel
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
@@ -9,7 +12,9 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 MOBILE_NUMBER_PATTERN = re.compile(r"^\+?[1-9]\d{9,14}$")
 SPECIAL_CHARACTER_PATTERN = re.compile(r"[^A-Za-z0-9]")
 LETTER_PATTERN = re.compile(r"[A-Za-z]")
-
+FULL_DAY = "FULL_DAY"
+HALF_DAY = "HALF_DAY"
+ABSENT = "ABSENT"
 
 class UserRole(StrEnum):
     ADMIN = "ADMIN"
@@ -113,3 +118,99 @@ class TokenResponse(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+
+# Attendance Section
+class PunchResponse(BaseModel):
+    message: str
+    attendance_date: date
+    punch_in: Optional[datetime] = None
+    punch_out: Optional[datetime] = None
+    status: Optional[str] = None
+
+class AttendanceHistory(BaseModel):
+
+    attendance_date: date
+
+    punch_in: Optional[datetime]
+
+    punch_out: Optional[datetime]
+
+    working_minutes: int
+
+    status: str
+
+    remarks: Optional[str]
+
+class AttendanceSummary(BaseModel):
+
+    total_days: int
+
+    full_days: int
+
+    half_days: int
+
+    absent_days: int
+
+    total_working_minutes: int
+
+class StaffAttendanceItem(BaseModel):
+
+    attendance_date: date
+
+    punch_in: Optional[datetime]
+
+    punch_out: Optional[datetime]
+
+    working_minutes: int
+
+    status: str
+
+    remarks: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+class StaffAttendanceReport(BaseModel):
+
+    staff_id: int
+
+    month: int
+
+    year: int
+
+    total_days: int
+
+    full_days: int
+
+    half_days: int
+
+    absent_days: int
+
+    working_minutes: int
+
+    records: list[StaffAttendanceItem]
+    
+class MonthlySummaryItem(BaseModel):
+
+    staff_id: int
+
+    staff_name: str
+
+    full_days: int
+
+    half_days: int
+
+    absent_days: int
+
+    total_minutes: int
+
+class MonthlySummaryResponse(BaseModel):
+
+    month: int
+
+    year: int
+
+    total_staffs: int
+
+    data: list[MonthlySummaryItem]                    

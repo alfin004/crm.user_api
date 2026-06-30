@@ -18,6 +18,13 @@ class Settings(BaseSettings):
 
     admin_password: str | None = Field(default=None, alias="ADMIN_PASSWORD")
     cors_allowed_origins: str = Field(default="", alias="CORS_ALLOWED_ORIGINS")
+   
+    attendance_config: str = Field(
+        default='{"Full_day":8,"Half_day":4}',
+        alias="ATTENDANCE_CONFIG",
+    )
+
+
 
     model_config = SettingsConfigDict(
         env_file=".env",
